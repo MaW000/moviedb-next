@@ -5,6 +5,8 @@ import Image from 'next/image'
 const Index = () => {
   const [inputs, setInputs] = useState({title: 'a'})
   const [movie, setMovie] = useState()
+  const [likes, setLikes] = useState()
+  
   function handleChange(e) {
     const {name, value} = e.target
     setInputs(prev => ({
@@ -12,17 +14,32 @@ const Index = () => {
       [name]: value
     }))
   }
-  
-  useEffect(() => {
+
+  const getLikes = async() => {
+    const url = "http://localhost:3000/api/likes";
+    const options = {
+      mode: "no-cors",
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json;charset=UTF-8"
+      },
+    };
     try {
-      fetch(`http://www.omdbapi.com/?t=${inputs.title}&y=${inputs.year}&apikey=c450e1a6`)
-        .then((response) => response.json())
-        .then((data) => data.Poster && setMovie(data));
+      await fetch(url, options)
+        .catch(console.error)
+        .then((res) => res.json())
+        .then((data) => {
+          setLikes(data.data.reduce((counter, obj) => {
+            console.log([obj.imdbID, movie.imdbID])
+            if(obj.imdbID === movie.imdbID) counter += 1
+            return counter;
+          }, 0))
+        })
     } catch (error) {
       console.log(error);
     }
-    
-  }, [inputs])
+  }
  
   const handleSaveMovie = async (e) => {
     e.preventDefault();
@@ -46,6 +63,40 @@ const Index = () => {
     }
   }
 
+  const handleLike = async(e) => {
+    e.preventDefault();
+    const url = "http://localhost:3000/api/likes"
+    const options = {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json;charset=UTF-8"
+      },
+      body: JSON.stringify(movie.imdbID)
+    };
+
+    try {
+      await fetch(url, options)
+        .then((res) => res.json())
+        .then((data) => console.log(data))
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    try {
+      fetch(`http://www.omdbapi.com/?t=${inputs.title}&y=${inputs.year}&apikey=c450e1a6`)
+        .then((response) => response.json())
+        .then((data) => data.Poster && setMovie(data))
+        .then(getLikes())
+    } catch (error) {
+      console.log(error);
+    }
+    
+    
+  }, [inputs])
+  
   return (
     <Layout className="homepage">
     <div className='text-center bg-slate-600 rounded-3xl flex flex-col'>
@@ -62,8 +113,8 @@ const Index = () => {
       <div className="" >
         <div className='flex justify-center hover:cursor-pointer p-2'>
           <div className="flex mr-2">
-            <ThumbUpOutlined />
-            <h1 className="ml-1">1</h1>
+            <ThumbUpOutlined onClick={handleLike}/>
+            <h1 className="ml-1">{likes}</h1>
           </div>
           
           <div className="flex ml-2 hover:cursor-pointer">
@@ -81,6 +132,7 @@ const Index = () => {
                 width={300}
                 height={100}
                 layout="responsive"
+                priority
               />
             </center>
             <h1 className='text-3xl p-5'>{movie.Title}</h1>

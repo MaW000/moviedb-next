@@ -1,5 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'https://moviedb-next-js.vercel.app/',
+      },
+    ]
+  },
   reactStrictMode: true,
   swcMinify: true,
   env: {
