@@ -8,6 +8,7 @@ const MovieDash = () => {
   const getMovies = async() => {
     const url = "http://localhost:3000/api/movies";
     const options = {
+      mode: "no-cors",
       method: "GET",
       
     };
