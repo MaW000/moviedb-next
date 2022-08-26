@@ -1,7 +1,7 @@
-import { signOut, useSession } from 'next-auth/react';
+
 import Head from 'next/head';
 import Link from 'next/link';
-import React, { useContext, useEffect, useState } from 'react';
+import React from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
