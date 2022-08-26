@@ -1,9 +1,11 @@
 import React, {useEffect, useState} from 'react'
+import dbConnect from '../utils/dbConnect'
+import Movie from '../utils/models/movie'
 import Layout from '../components/layout'
 import Image from 'next/image'
 
-const MovieDash = () => {
-  const [movies, setMovies] = useState()
+const MovieDash = ({movies}) => {
+  const [moviess, setMovies] = useState()
 
   const getMovies = async() => {
     const url = "http://localhost:3000/api/movies";
@@ -17,6 +19,7 @@ const MovieDash = () => {
     };
     try {
       await fetch(url, options)
+        .catch(console.error)
         .then((res) => res.json())
         .then((data) => setMovies(data.data))
     } catch (error) {
@@ -26,6 +29,7 @@ const MovieDash = () => {
 
   useEffect(() => {
     getMovies()
+    console.log(moviess)
   }, [])
 
   return (
@@ -70,15 +74,15 @@ const MovieDash = () => {
   </Layout>
 )}
 
-// export async function getServerSideProps() {
-//   await dbConnect()
-//   const result = await Movie.find({})
-//   const movies = result.map((doc) => {
-//     const movie = doc.toObject()
-//     movie._id = movie._id.toString()
-//     return movie
-//   })
-//   return { props: { movies: movies } }
-// }
+export async function getServerSideProps() {
+  await dbConnect()
+  const result = await Movie.find({})
+  const movies = result.map((doc) => {
+    const movie = doc.toObject()
+    movie._id = movie._id.toString()
+    return movie
+  })
+  return { props: { movies: movies } }
+}
 
 export default MovieDash
