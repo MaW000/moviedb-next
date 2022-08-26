@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react'
-import dbConnect from '../utils/dbConnect'
 import {ThumbUpOutlined, ThumbDownOutlined } from '@mui/icons-material';
 import Layout from '../components/layout'
-import api from '../utils/api';
 import Image from 'next/image'
 const Index = () => {
   const [inputs, setInputs] = useState({title: 'a'})
@@ -16,15 +14,33 @@ const Index = () => {
   }
   
   useEffect(() => {
-    fetch(`http://www.omdbapi.com/?t=${inputs.title}&y=${inputs.year}&apikey=c450e1a6`)
-      .then((response) => response.json())
-      .then((data) => data.Poster && setMovie(data));
+    try {
+      fetch(`http://www.omdbapi.com/?t=${inputs.title}&y=${inputs.year}&apikey=c450e1a6`)
+        .then((response) => response.json())
+        .then((data) => data.Poster && setMovie(data));
+    } catch (error) {
+      console.log(error);
+    }
+    
   }, [inputs])
  
   const handleSaveMovie = async (e) => {
     e.preventDefault();
+
+    const url = "http://localhost:3000/api/movies"
+    const options = {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json;charset=UTF-8"
+      },
+      body: JSON.stringify(movie)
+    };
+
     try {
-      const { data } = await api.post("/movies", movie);
+      await fetch(url, options)
+        .then((res) => res.json())
+        .then((data) => console.log(data))
     } catch (error) {
       console.log(error);
     }
