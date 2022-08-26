@@ -48,6 +48,7 @@ const MovieDash = ({movies}) => {
             width={.005}
             height={.01}
             layout="responsive"
+            priority
           />
         </div>
 
