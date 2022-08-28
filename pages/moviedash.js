@@ -4,31 +4,11 @@ import Movie from '../utils/models/movie'
 import Layout from '../components/layout'
 import Image from 'next/image'
 
-const MovieDash = ({movies}) => {
-  const [moviess, setMovies] = useState()
-
-  const getMovies = async() => {
-    const url = "http://localhost:3000/api/movies";
-    const options = {
-      mode: "no-cors",
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json;charset=UTF-8"
-      },
-    };
-    try {
-      await fetch(url, options)
-        .catch(console.error)
-        .then((res) => res.json())
-        .then((data) => setMovies(data.data))
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
+const MovieDash = ({moviedb}) => {
+  const [movies, setMovies] = useState(moviedb)
+  
   const handleDelete = async(e) => {
-    const dbKey = (e.target.parentNode.parentNode.getAttribute('dbKey'));
+    const dbkey = (e.target.parentNode.parentNode.getAttribute('dbkey'));
     const url = "/api/movies";
     const options = {
       method: "DELETE",
@@ -36,31 +16,26 @@ const MovieDash = ({movies}) => {
         Accept: "application/json",
         "Content-Type": "application/json;charset=UTF-8"
       },
-      body: JSON.stringify(dbKey)
+      body: JSON.stringify(dbkey)
     };
     try {
       await fetch(url, options)
         .then((res) => res.json())
-        .then((data) => console.log(data))
+        .then((data) => setMovies(movies.filter((movie) => movie._id !== dbkey)))
     } catch (error) {
       console.log(error)
     }
   }
 
-  useEffect(() => {
-    getMovies()
-    console.log(moviess)
-  }, [])
-
   return (
   <Layout>
     
-    <div className='flex  flex-nowrap flex-row overflow-x-auto gap-10 max-h-full py-5'>
+    <div className='flex flex-nowrap flex-row overflow-x-auto gap-10 max-h-full py-5'>
     {movies && movies.map((movie) => {
       
     return (
       
-        <div className="flex flex-col bg-slate-400  mx-2 rounded-xl basis-0" key={movie._id} dbKey={movie._id} >
+        <div className="flex flex-col bg-slate-400  mx-2 rounded-xl basis-0" key={movie._id} dbkey={movie._id} >
           <div className="align-bottom px-12 py-5">
             <Image 
               className='align-bottom h-2'
@@ -109,7 +84,7 @@ export async function getServerSideProps() {
     movie._id = movie._id.toString()
     return movie
   })
-  return { props: { movies: movies } }
+  return { props: { moviedb: movies } }
 }
 
 export default MovieDash
