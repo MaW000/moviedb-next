@@ -84,6 +84,7 @@ const Index = ({ likes }) => {
       await fetch(url, options)
         .then((res) => res.json())
         .then((data) => console.log(data))
+        .then(like += 1)
     } catch (error) {
       console.log(error);
     }
