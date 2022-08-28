@@ -157,10 +157,8 @@ export async function getServerSideProps() {
     const like = doc.toObject()
     like._id = like._id.toString();
     delete like.__v;
-    console.log(like)
     return like
   })
-  console.log(likes)
   return { props: { likes: likes } }
 }
 
