@@ -20,36 +20,30 @@ const Index = ({ likes }) => {
     }))
   }
   
-  // const getLikes = async() => {
-  //   const url = "http://localhost:3000/api/likes";
-  //   const options = {
-  //     mode: "no-cors",
-  //     method: "GET",
-  //     headers: {
-  //       Accept: "application/json",
-  //       "Content-Type": "application/json;charset=UTF-8"
-  //     },
-  //   };
-  //   try {
-  //     await fetch(url, options)
-  //       .catch(console.error)
-  //       .then((res) => res.json())
-  //       .then((data) => {
-  //         setLikes(data.data.reduce((counter, obj) => {
-  //           console.log([obj.imdbID, movie.imdbID])
-  //           if(obj.imdbID === movie.imdbID) counter += 1
-  //           return counter;
-  //         }, 0))
-  //       })
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // }
+  const getLikes = async() => {
+    const url = "/api/likes";
+    const options = {
+      mode: "no-cors",
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json;charset=UTF-8"
+      },
+    };
+    try {
+      await fetch(url, options)
+        .catch(console.error)
+        .then((res) => res.json())
+        .then((data) => console.log(data))
+    } catch (error) {
+      console.log(error);
+    }
+  }
  
   const handleSaveMovie = async (e) => {
     e.preventDefault();
 
-    const url = "http://localhost:3000/api/movies"
+    const url = "/api/movies"
     const options = {
       method: "POST",
       headers: {
@@ -95,6 +89,7 @@ const Index = ({ likes }) => {
       fetch(`http://www.omdbapi.com/?t=${inputs.title}&y=${inputs.year}&apikey=c450e1a6`)
         .then((response) => response.json())
         .then((data) => data.Poster && setMovie(data))
+        .then(getLikes())
     } catch (error) {
       console.log(error);
     }
