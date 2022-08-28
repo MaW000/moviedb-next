@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import {ThumbUpOutlined, ThumbDownOutlined } from '@mui/icons-material';
+import dbConnect from '../utils/dbConnect'
+import Likes from '../utils/models/likes'
 import Layout from '../components/layout'
 import Image from 'next/image'
-const Index = () => {
+const Index = ({ likes }) => {
   const [inputs, setInputs] = useState({title: 'a'})
   const [movie, setMovie] = useState()
-  const [likes, setLikes] = useState()
+  const [like, setLike] = useState()
   
   function handleChange(e) {
     const {name, value} = e.target
@@ -14,32 +16,32 @@ const Index = () => {
       [name]: value
     }))
   }
-
-  const getLikes = async() => {
-    const url = "http://localhost:3000/api/likes";
-    const options = {
-      mode: "no-cors",
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json;charset=UTF-8"
-      },
-    };
-    try {
-      await fetch(url, options)
-        .catch(console.error)
-        .then((res) => res.json())
-        .then((data) => {
-          setLikes(data.data.reduce((counter, obj) => {
-            console.log([obj.imdbID, movie.imdbID])
-            if(obj.imdbID === movie.imdbID) counter += 1
-            return counter;
-          }, 0))
-        })
-    } catch (error) {
-      console.log(error);
-    }
-  }
+  console.log(like)
+  // const getLikes = async() => {
+  //   const url = "http://localhost:3000/api/likes";
+  //   const options = {
+  //     mode: "no-cors",
+  //     method: "GET",
+  //     headers: {
+  //       Accept: "application/json",
+  //       "Content-Type": "application/json;charset=UTF-8"
+  //     },
+  //   };
+  //   try {
+  //     await fetch(url, options)
+  //       .catch(console.error)
+  //       .then((res) => res.json())
+  //       .then((data) => {
+  //         setLikes(data.data.reduce((counter, obj) => {
+  //           console.log([obj.imdbID, movie.imdbID])
+  //           if(obj.imdbID === movie.imdbID) counter += 1
+  //           return counter;
+  //         }, 0))
+  //       })
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // }
  
   const handleSaveMovie = async (e) => {
     e.preventDefault();
@@ -89,7 +91,11 @@ const Index = () => {
       fetch(`http://www.omdbapi.com/?t=${inputs.title}&y=${inputs.year}&apikey=c450e1a6`)
         .then((response) => response.json())
         .then((data) => data.Poster && setMovie(data))
-        .then(getLikes())
+        .then(setLike(likes.reduce((counter, obj) => {
+          console.log(obj, movie.imdbID)
+          if (obj.imdbID === movie.imdbID) counter += 1
+          return counter; 
+        }, 0)))
     } catch (error) {
       console.log(error);
     }
@@ -114,7 +120,7 @@ const Index = () => {
         <div className='flex justify-center hover:cursor-pointer p-2'>
           <div className="flex mr-2">
             <ThumbUpOutlined onClick={handleLike}/>
-            <h1 className="ml-1">{likes}</h1>
+            <h1 className="ml-1">{like}</h1>
           </div>
           
           <div className="flex ml-2 hover:cursor-pointer">
@@ -154,6 +160,20 @@ const Index = () => {
     </div>
     </Layout>
   )
+}
+
+export async function getServerSideProps() {
+  await dbConnect()
+  const like = await Likes.find({})
+  const likes = like.map((doc) => {
+    const like = doc.toObject()
+    delete like._id
+    delete like.__v
+    console.log(like)
+    return like
+  })
+  console.log(likes)
+  return { props: { likes: likes } }
 }
 
 export default Index
