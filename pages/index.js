@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import {ThumbUpOutlined, ThumbDownOutlined } from '@mui/icons-material';
+import {ThumbUpOutlined, ThumbDownOutlined, ThumbUpAlt } from '@mui/icons-material';
 import dbConnect from '../utils/dbConnect'
 import Likes from '../utils/models/likes'
 import Layout from '../components/layout'
@@ -7,11 +7,9 @@ import Image from 'next/image'
 const Index = ({ likes }) => {
   const [inputs, setInputs] = useState({title: 'a'})
   const [movie, setMovie] = useState()
-  const like = likes.reduce((counter, obj) => {
-    if (movie && obj.imdbID === movie.imdbID) counter += 1
-    return counter; 
-  }, 0)
-  
+  const [like, setLike] = useState(0)
+  const [liked, setLiked] = useState(false)
+  console.log(1, movie)
   function handleChange(e) {
     const {name, value} = e.target
     setInputs(prev => ({
@@ -34,12 +32,12 @@ const Index = ({ likes }) => {
       await fetch(url, options)
         .catch(console.error)
         .then((res) => res.json())
-        .then((data) => console.log(data))
+        .then((data) => console.log(data,'gotlikes'))
     } catch (error) {
       console.log(error);
     }
   }
- 
+  getLikes()
   const handleSaveMovie = async (e) => {
     e.preventDefault();
 
@@ -64,7 +62,7 @@ const Index = ({ likes }) => {
 
   const handleLike = async(e) => {
     e.preventDefault();
-    const url = "http://localhost:3000/api/likes"
+    const url = "/api/likes"
     const options = {
       method: "POST",
       headers: {
@@ -78,7 +76,8 @@ const Index = ({ likes }) => {
       await fetch(url, options)
         .then((res) => res.json())
         .then((data) => console.log(data))
-        .then(like += 1)
+        .then(setLike(prev => prev +1 ))
+        .then(setLiked(true))
     } catch (error) {
       console.log(error);
     }
@@ -88,13 +87,20 @@ const Index = ({ likes }) => {
     try {
       fetch(`http://www.omdbapi.com/?t=${inputs.title}&y=${inputs.year}&apikey=c450e1a6`)
         .then((response) => response.json())
-        .then((data) => data.Poster && setMovie(data))
-        .then(getLikes())
+        .then((data) => {
+          if(data.Poster) {
+            setMovie(data)
+            setLike(likes.reduce((counter, obj) => {
+              if(obj.imdbID === data.imdbID) counter += 1
+              return counter;
+            }, 0))
+          }
+        })
     } catch (error) {
       console.log(error);
     }
   }, [inputs])
-  
+
   return (
     <Layout className="homepage">
     <div className='text-center bg-slate-600 rounded-3xl flex flex-col'>
@@ -111,7 +117,8 @@ const Index = ({ likes }) => {
       <div className="" >
         <div className='flex justify-center hover:cursor-pointer p-2'>
           <div className="flex mr-2">
-            <ThumbUpOutlined onClick={handleLike}/>
+            {liked ?  <ThumbUpAlt />:
+            <ThumbUpOutlined onClick={handleLike}/>}
             <h1 className="ml-1">{like}</h1>
           </div>
           
