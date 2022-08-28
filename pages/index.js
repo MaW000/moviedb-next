@@ -9,7 +9,7 @@ const Index = ({ likes }) => {
   const [movie, setMovie] = useState()
   const [like, setLike] = useState(0)
   const [liked, setLiked] = useState(false)
-  console.log(1, movie)
+  
   function handleChange(e) {
     const {name, value} = e.target
     setInputs(prev => ({
@@ -18,26 +18,6 @@ const Index = ({ likes }) => {
     }))
   }
   
-  const getLikes = async() => {
-    const url = "/api/likes";
-    const options = {
-      mode: "no-cors",
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json;charset=UTF-8"
-      },
-    };
-    try {
-      await fetch(url, options)
-        .catch(console.error)
-        .then((res) => res.json())
-        .then((data) => console.log(data,'gotlikes'))
-    } catch (error) {
-      console.log(error);
-    }
-  }
-  getLikes()
   const handleSaveMovie = async (e) => {
     e.preventDefault();
 
@@ -76,7 +56,7 @@ const Index = ({ likes }) => {
       await fetch(url, options)
         .then((res) => res.json())
         .then((data) => console.log(data))
-        .then(setLike(prev => prev +1 ))
+        .then(setLike(prev => prev + 1 ))
         .then(setLiked(true))
     } catch (error) {
       console.log(error);
@@ -88,13 +68,22 @@ const Index = ({ likes }) => {
       fetch(`http://www.omdbapi.com/?t=${inputs.title}&y=${inputs.year}&apikey=c450e1a6`)
         .then((response) => response.json())
         .then((data) => {
-          if(data.Poster) {
-            setMovie(data)
-            setLike(likes.reduce((counter, obj) => {
-              if(obj.imdbID === data.imdbID) counter += 1
-              return counter;
-            }, 0))
-          }
+          if(Object.keys(data).length > 3){
+            if(data.Poster && data.Poster.substring(0, 8) !== 'https://') {
+              delete data.Poster
+              console.log(data)
+              setMovie(data)
+              setLike(likes.reduce((counter, obj) => {
+                if(obj.imdbID === data.imdbID) counter += 1
+                return counter;
+              }, 0))
+            } else {
+              setMovie(data)
+              setLike(likes.reduce((counter, obj) => {
+                if(obj.imdbID === data.imdbID) counter += 1
+                return counter;
+              }, 0))
+            }}
         })
     } catch (error) {
       console.log(error);
@@ -129,16 +118,16 @@ const Index = ({ likes }) => {
         </div>
         {movie &&
           <div className="movie-obj">
-            <center className="">
+            <center className="">{movie.Poster &&
               <Image
                 alt="Movie Poster"
-                src={movie.Poster}
+                src={ movie.Poster.substring(0, 7) !== 'http://' ? movie.Poster : null}
                 objectFit='contain'
                 width={300}
                 height={100}
                 layout="responsive"
                 priority
-              />
+              />}
             </center>
             <h1 className='text-3xl p-5'>{movie.Title}</h1>
             <div className="flex text-center justify-center">
@@ -166,8 +155,8 @@ export async function getServerSideProps() {
   const like = await Likes.find({})
   const likes = like.map((doc) => {
     const like = doc.toObject()
-    delete like._id
-    delete like.__v
+    like._id = like._id.toString();
+    delete like.__v;
     console.log(like)
     return like
   })
