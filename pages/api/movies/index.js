@@ -29,5 +29,16 @@ switch (method) {
         res.status(500).json({ success: false, error });
     }
     break;
+    
+    case "DELETE":
+        try {
+            const movie = await Movie.deleteOne({ _id: req.body});
+    
+            res.status(201).json({success:true, data: movie});
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({ success: false, error });
+        }
+        break;
     }
 }
