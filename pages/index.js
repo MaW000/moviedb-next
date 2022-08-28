@@ -7,7 +7,10 @@ import Image from 'next/image'
 const Index = ({ likes }) => {
   const [inputs, setInputs] = useState({title: 'a'})
   const [movie, setMovie] = useState()
-  const [like, setLike] = useState()
+  const like = likes.reduce((counter, obj) => {
+    if (movie && obj.imdbID === movie.imdbID) counter += 1
+    return counter; 
+  }, 0)
   
   function handleChange(e) {
     const {name, value} = e.target
@@ -16,7 +19,7 @@ const Index = ({ likes }) => {
       [name]: value
     }))
   }
-  console.log(like)
+  
   // const getLikes = async() => {
   //   const url = "http://localhost:3000/api/likes";
   //   const options = {
@@ -91,16 +94,9 @@ const Index = ({ likes }) => {
       fetch(`http://www.omdbapi.com/?t=${inputs.title}&y=${inputs.year}&apikey=c450e1a6`)
         .then((response) => response.json())
         .then((data) => data.Poster && setMovie(data))
-        .then(setLike(likes.reduce((counter, obj) => {
-          console.log(obj, movie.imdbID)
-          if (obj.imdbID === movie.imdbID) counter += 1
-          return counter; 
-        }, 0)))
     } catch (error) {
       console.log(error);
     }
-    
-    
   }, [inputs])
   
   return (
